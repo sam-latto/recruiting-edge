@@ -127,54 +127,38 @@ def _render_suggestions(result: dict) -> None:
 # Page entrypoint
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    st.set_page_config(page_title="ATS Scorer — RecruitingEdge", layout="wide")
-
+def render_page() -> None:
     if not require_user():
         return
-
     user_id = st.session_state["user_id"]
     resume_text: str = st.session_state.get("resume_text", "")
-
     st.title("ATS Resume Scorer")
     st.caption(
         "Simulates how Workday, Greenhouse, and Lever score your resume: "
         "keyword frequency, skills coverage, title alignment, and format signals — "
         "not holistic judgment. Optimize for what the filter actually does."
     )
-
-    # --- Application selector ---
     apps = get_job_applications_for_user(user_id)
     if not apps:
         st.warning("No applications found. Add a job in the Job Manager first.")
         return
-
-    # Only show apps that have a JD attached
     scoreable = [a for a in apps if a.get("jd_text")]
     unscoreable = [a for a in apps if not a.get("jd_text")]
-
     if not scoreable:
         st.warning(
             "None of your applications have a job description saved. "
             "Edit a job in the Job Manager and add the JD text, then come back."
         )
         return
-
     app_options = {f"{a['company']} — {a['role']}": a for a in scoreable}
     selected_label = st.selectbox("Select an application to score against", options=list(app_options.keys()))
     selected_app = app_options[selected_label]
-
     if unscoreable:
         st.caption(f"{len(unscoreable)} application(s) hidden — no JD text saved.")
-
-    # --- Resume check ---
     if not resume_text.strip():
         st.error("No resume text found in your session. Please re-upload your resume on the onboarding page.")
         return
-
     st.divider()
-
-    # --- Score button ---
     if st.button("Score my resume against this JD", type="primary"):
         with st.spinner("Scoring… this takes 10–20 seconds."):
             result = run_ats_agent(
@@ -184,17 +168,12 @@ def main() -> None:
             )
         st.session_state[f"ats_result_{selected_app['id']}"] = result
         st.rerun()
-
-    # --- Display result ---
     result = st.session_state.get(f"ats_result_{selected_app['id']}")
-
-    # Fall back to most recent DB score if the page was refreshed
     if result is None:
         history = get_ats_scores_for_application(selected_app["id"])
         if history:
             result = history[0]
             st.session_state[f"ats_result_{selected_app['id']}"] = result
-
     if result:
         _render_score_overview(result)
         st.divider()
@@ -203,8 +182,6 @@ def main() -> None:
         _render_section_feedback(result)
         st.divider()
         _render_suggestions(result)
-
-        # Score history
         history = get_ats_scores_for_application(selected_app["id"])
         if len(history) > 1:
             with st.expander(f"Score history ({len(history)} runs)"):
@@ -213,6 +190,11 @@ def main() -> None:
                     st.markdown(f"- **{h['overall_score']}/100** — {scored_at}")
     else:
         st.info("Click the button above to score your resume against this job description.")
+
+
+def main() -> None:
+    st.set_page_config(page_title="ATS Scorer — RecruitingEdge", layout="wide")
+    render_page()
 
 
 if __name__ == "__main__":

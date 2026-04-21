@@ -225,17 +225,18 @@ def _render_pipeline(user_id: str) -> None:
 # Page entrypoint
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    st.set_page_config(page_title="Job Manager — RecruitingEdge", layout="wide")
-
+def render_page() -> None:
     if not require_user():
         return
-
     user_id = st.session_state["user_id"]
-
     _render_add_job(user_id)
     st.divider()
     _render_pipeline(user_id)
+
+
+def main() -> None:
+    st.set_page_config(page_title="Job Manager — RecruitingEdge", layout="wide")
+    render_page()
 
 
 if __name__ == "__main__":

@@ -172,21 +172,21 @@ def _render_chat(user_id: str) -> None:
 # Page entrypoint
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    st.set_page_config(page_title="STAR Story Builder — RecruitingEdge", layout="wide")
-
+def render_page() -> None:
     if not require_user():
         return
-
     _init_state()
-
     user_id = st.session_state["user_id"]
-
     left, right = st.columns([2, 1])
     with left:
         _render_chat(user_id)
     with right:
         _render_story_bank(user_id)
+
+
+def main() -> None:
+    st.set_page_config(page_title="STAR Story Builder — RecruitingEdge", layout="wide")
+    render_page()
 
 
 if __name__ == "__main__":

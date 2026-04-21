@@ -204,41 +204,35 @@ def _render_chat(app: dict, user_id: str) -> None:
 # Page entrypoint
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    st.set_page_config(page_title="Bullet Tailoring — RecruitingEdge", layout="wide")
-
+def render_page() -> None:
     if not require_user():
         return
-
     _init_state()
-
     user_id = st.session_state["user_id"]
-
-    # --- Application selector ---
     apps = get_job_applications_for_user(user_id)
     if not apps:
         st.warning("No applications found. Add a job in the Job Manager first.")
         return
-
     app_options = {f"{a['company']} — {a['role']}": a for a in apps}
     selected_label = st.selectbox(
         "Select a job application to tailor bullets for",
         options=list(app_options.keys()),
     )
     selected_app = app_options[selected_label]
-
-    # Reset conversation when the user switches applications
     if st.session_state.get("tail_app_id") != selected_app["id"]:
         _reset_tailoring_conversation()
         st.session_state["tail_app_id"] = selected_app["id"]
-
     st.divider()
-
     left, right = st.columns([2, 1])
     with left:
         _render_chat(selected_app, user_id)
     with right:
         _render_right_panel(selected_app, user_id)
+
+
+def main() -> None:
+    st.set_page_config(page_title="Bullet Tailoring — RecruitingEdge", layout="wide")
+    render_page()
 
 
 if __name__ == "__main__":

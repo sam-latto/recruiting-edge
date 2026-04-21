@@ -159,22 +159,22 @@ def _render_kanban(user_id: str) -> None:
 # Page entrypoint
 # ---------------------------------------------------------------------------
 
+def render_page() -> None:
+    if not require_user():
+        return
+    user_id = st.session_state["user_id"]
+    st.title("Application Tracker")
+    _render_gmail_panel(user_id)
+    st.divider()
+    _render_kanban(user_id)
+
+
 def main() -> None:
     st.set_page_config(
         page_title="Application Tracker — RecruitingEdge",
         layout="wide",
     )
-
-    if not require_user():
-        return
-
-    user_id = st.session_state["user_id"]
-
-    st.title("Application Tracker")
-
-    _render_gmail_panel(user_id)
-    st.divider()
-    _render_kanban(user_id)
+    render_page()
 
 
 if __name__ == "__main__":
